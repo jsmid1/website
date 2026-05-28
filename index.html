@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ahoj Ivo!</title>
+    <title>Klikni na své jméno!</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -28,20 +28,84 @@
         .container {
             text-align: center;
             position: relative;
+            z-index: 10;
         }
 
         h1 {
+            font-size: 3rem;
+            color: #ad1457;
+            text-shadow: 0 2px 10px rgba(173, 20, 87, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .greeting {
             font-size: 5rem;
             color: #ad1457;
             text-shadow: 0 2px 10px rgba(173, 20, 87, 0.3);
             animation: pop 2s ease-in-out infinite alternate;
-            position: relative;
-            z-index: 1;
         }
 
         @keyframes pop {
             from { transform: scale(1); }
             to { transform: scale(1.05); }
+        }
+
+        .buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.5rem;
+            font-family: 'Georgia', serif;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-iva {
+            background: linear-gradient(135deg, #ec407a, #ad1457);
+            color: white;
+        }
+
+        .btn-barunka {
+            background: linear-gradient(135deg, #f48fb1, #e91e63);
+            color: white;
+            position: absolute;
+            transition: none;
+            user-select: none;
+        }
+
+        .btn-barunka:hover {
+            transform: none;
+        }
+
+        .back-btn {
+            margin-top: 2rem;
+            padding: 0.6rem 1.5rem;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            background: rgba(173, 20, 87, 0.2);
+            color: #ad1457;
+            border: 2px solid #ad1457;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(173, 20, 87, 0.35);
         }
 
         .flower {
@@ -82,14 +146,109 @@
             50% { opacity: 0.7; }
             100% { opacity: 0; transform: translateY(-100vh) scale(1.2); }
         }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Ahoj Ivo!</h1>
+        <div id="choose-screen">
+            <h1>Klikněte na své jméno</h1>
+            <div class="buttons">
+                <button class="btn btn-iva" onclick="showGreeting()">Iva</button>
+            </div>
+        </div>
+
+        <div id="greeting-screen" class="hidden">
+            <div class="greeting">Ahoj Ivo!</div>
+            <button class="back-btn" onclick="goBack()">Zpět</button>
+        </div>
     </div>
 
+    <button class="btn btn-barunka" id="barunka-btn">Barunka</button>
+
     <script>
+        const barunkaBtn = document.getElementById('barunka-btn');
+        const chooseScreen = document.getElementById('choose-screen');
+        const greetingScreen = document.getElementById('greeting-screen');
+
+        function positionBarunkaInitial() {
+            const container = document.querySelector('.buttons');
+            const rect = container.getBoundingClientRect();
+            const ivaBtn = document.querySelector('.btn-iva');
+            const ivaRect = ivaBtn.getBoundingClientRect();
+
+            barunkaBtn.style.left = (ivaRect.right + 32) + 'px';
+            barunkaBtn.style.top = ivaRect.top + 'px';
+        }
+
+        positionBarunkaInitial();
+        window.addEventListener('resize', positionBarunkaInitial);
+
+        function getRandomPosition() {
+            const btnRect = barunkaBtn.getBoundingClientRect();
+            const maxX = window.innerWidth - btnRect.width - 20;
+            const maxY = window.innerHeight - btnRect.height - 20;
+            return {
+                x: Math.max(20, Math.random() * maxX),
+                y: Math.max(20, Math.random() * maxY)
+            };
+        }
+
+        function doesOverlap(x, y) {
+            const btnW = barunkaBtn.offsetWidth;
+            const btnH = barunkaBtn.offsetHeight;
+            const ivaBtn = document.querySelector('.btn-iva');
+            if (!ivaBtn) return false;
+            const ivaRect = ivaBtn.getBoundingClientRect();
+            return !(x + btnW < ivaRect.left || x > ivaRect.right ||
+                     y + btnH < ivaRect.top || y > ivaRect.bottom);
+        }
+
+        function dodge() {
+            let pos;
+            let attempts = 0;
+            do {
+                pos = getRandomPosition();
+                attempts++;
+            } while (doesOverlap(pos.x, pos.y) && attempts < 50);
+
+            barunkaBtn.style.left = pos.x + 'px';
+            barunkaBtn.style.top = pos.y + 'px';
+        }
+
+        barunkaBtn.addEventListener('mouseenter', dodge);
+        barunkaBtn.addEventListener('mouseover', dodge);
+        barunkaBtn.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            dodge();
+        });
+        barunkaBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            dodge();
+        });
+        barunkaBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            dodge();
+        });
+        barunkaBtn.addEventListener('pointerdown', function(e) {
+            e.preventDefault();
+            dodge();
+        });
+
+        function showGreeting() {
+            chooseScreen.classList.add('hidden');
+            greetingScreen.classList.remove('hidden');
+            barunkaBtn.classList.add('hidden');
+        }
+
+        function goBack() {
+            greetingScreen.classList.add('hidden');
+            chooseScreen.classList.remove('hidden');
+            barunkaBtn.classList.remove('hidden');
+            positionBarunkaInitial();
+        }
+
         const flowers = ['🌸', '🌺', '🌷', '💮', '🏵️'];
         for (let i = 0; i < 12; i++) {
             const el = document.createElement('div');
