@@ -82,9 +82,10 @@
         .btn-barunka {
             background: linear-gradient(135deg, #f48fb1, #e91e63);
             color: white;
-            position: absolute;
+            position: fixed;
             transition: none;
             user-select: none;
+            z-index: 100;
         }
 
         .btn-barunka:hover {
@@ -113,6 +114,7 @@
             font-size: 2rem;
             opacity: 0.6;
             animation: float 6s ease-in-out infinite;
+            pointer-events: none;
         }
 
         @keyframes float {
@@ -127,6 +129,7 @@
             background: #ec407a;
             border-radius: 50%;
             animation: twinkle 3s ease-in-out infinite;
+            pointer-events: none;
         }
 
         @keyframes twinkle {
@@ -139,6 +142,7 @@
             font-size: 1.5rem;
             opacity: 0;
             animation: rise 4s ease-in infinite;
+            pointer-events: none;
         }
 
         @keyframes rise {
@@ -217,9 +221,7 @@
             barunkaBtn.style.top = pos.y + 'px';
         }
 
-        barunkaBtn.addEventListener('mouseenter', dodge);
-        barunkaBtn.addEventListener('mouseover', dodge);
-        barunkaBtn.addEventListener('mousedown', function(e) {
+        barunkaBtn.addEventListener('click', function(e) {
             e.preventDefault();
             dodge();
         });
@@ -227,13 +229,16 @@
             e.preventDefault();
             dodge();
         });
-        barunkaBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            dodge();
-        });
-        barunkaBtn.addEventListener('pointerdown', function(e) {
-            e.preventDefault();
-            dodge();
+
+        document.addEventListener('mousemove', function(e) {
+            const rect = barunkaBtn.getBoundingClientRect();
+            if (barunkaBtn.classList.contains('hidden')) return;
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
+            if (dist < 100) {
+                dodge();
+            }
         });
 
         function showGreeting() {
